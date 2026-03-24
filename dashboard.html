@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #2c3e50;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-section {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .header-section h1 {
+            font-size: 40px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header-section p {
+            color: #7f8c8d;
+            font-size: 15px;
+        }
+
+        .controls-wrapper {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .controls-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .size-select {
+            padding: 10px 16px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .size-select:hover {
+            border-color: #3498db;
+        }
+
+        .size-select:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+        }
+
+        .stats-bar {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 13px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .sort-toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 20px 30px;
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .sort-btn {
+            padding: 10px 16px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .sort-btn:hover {
+            border-color: #3498db;
+            background: #ebf5fb;
+        }
+
+        .sort-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(90deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+        }
+
+        th {
+            padding: 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        th:hover {
+            background: linear-gradient(90deg, #2c3e50 0%, #1a252f 100%);
+        }
+
+        th.sortable {
+            position: relative;
+        }
+
+        th.sortable::after {
+            content: ' ⇅';
+            font-size: 11px;
+            opacity: 0.6;
+            margin-left: 4px;
+        }
+
+        th.sorted-asc::after {
+            content: ' ↑';
+            opacity: 1;
+            color: #3498db;
+            margin-left: 4px;
+        }
+
+        th.sorted-desc::after {
+            content: ' ↓';
+            opacity: 1;
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #ecf0f1;
+            transition: all 0.2s;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tbody tr:hover {
+            background-color: #ebf5fb;
+            box-shadow: inset 0 0 0 1px rgba(52, 152, 219, 0.2);
+        }
+
+        td {
+            padding: 16px 18px;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .product-img {
+            width: 70px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #e0e6ed;
+        }
+
+        .product-img:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3);
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: #2c3e50;
+            max-width: 300px;
+        }
+
+        .product-price {
+            font-weight: 700;
+            color: #27ae60;
+            font-size: 15px;
+        }
+
+        .category-tag {
+            display: inline-block;
+            background: #ecf0f1;
+            color: #34495e;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .desc-cell {
+            position: relative;
+            color: #7f8c8d;
+            font-size: 13px;
+            max-width: 250px;
+        }
+
+        .desc-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 105%;
+            left: 0;
+            background: #2c3e50;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 100;
+            width: 300px;
+            word-wrap: break-word;
+            white-space: normal;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        td:hover .desc-tooltip {
+            display: block;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 25px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .pagination button,
+        .pagination span {
+            padding: 10px 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 13px;
+            min-width: 38px;
+            text-align: center;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: #3498db;
+            background: #ebf5fb;
+            color: #3498db;
+        }
+
+        .pagination button.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            border: none;
+            cursor: default;
+            color: #bdc3c7;
+            padding: 10px 4px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+
+        #message {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .alert.error {
+            background: #fadbd8;
+            color: #922b21;
+            border: 1px solid #f5b7b1;
+        }
+
+        .alert.success {
+            background: #d5f4e6;
+            color: #0b5345;
+            border: 1px solid #a9dfbf;
+        }
+
+        @media (max-width: 768px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-right {
+                width: 100%;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            td {
+                padding: 12px 10px;
+                font-size: 12px;
+            }
+
+            .sort-toolbar {
+                flex-wrap: wrap;
+            }
+
+            .header-section h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>📊 Product Dashboard</h1>
+            <p>Browse our complete product catalog with advanced filtering & sorting</p>
+        </div>
+
+        <div id="message"></div>
+
+        <div class="controls-wrapper">
+            <div class="controls-grid">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by product title..." />
+                </div>
+                <div class="controls-right">
+                    <span class="control-label">Items per page:</span>
+                    <select id="pageSize" class="size-select">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="sort-toolbar">
+            <button class="sort-btn" onclick="sortTable('title')">📝 Sort by Name</button>
+            <button class="sort-btn" onclick="sortTable('price')">💰 Sort by Price</button>
+        </div>
+
+        <div class="stats-bar" id="infoText"></div>
+
+        <div class="table-container">
+            <table id="productsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Image</th>
+                        <th class="sortable" onclick="sortTable('title')">Product Name</th>
+                        <th class="sortable" onclick="sortTable('price')">Price</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="5" class="loading">⏳ Loading products...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
